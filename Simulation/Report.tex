@@ -17,7 +17,7 @@
         \vspace*{-0.5in}
         \includegraphics[width=100pt]{180207 ASU-Logo-Black-4000.png}
         \\ \vspace{15pt}
-		\textbf{\huge Signals Project Report}
+		\textbf{\huge Communication Systems Project Report}
         \\ \vspace{30pt}
         \Large Ain Shams University \\ Faculty of Engineering
         \\ \vspace{15pt}
@@ -48,9 +48,9 @@
 \section{Analog Communication}
 \section{Digital Communication}
 \subsection{Sampling, Quantization, and PCM}
-\subsubsection{Sampling (Items 1--3)}
+\subsubsection{Sampling}
 \newcommand{\samplingfig}[2]{\par\medskip\noindent\begin{minipage}{\textwidth}\centering
-\includegraphics[width=0.8\textwidth]{#1}\par\smallskip
+\includegraphics[width=0.95\textwidth]{#1}\par\smallskip
 \refstepcounter{figure}Figure \thefigure: #2\end{minipage}\par\medskip}
 The message is $m(t)=\cos(2\pi 20t)+0.5\cos(2\pi 50t)$, so its bandwidth is $W=50$ Hz and the Nyquist rate is $f_N=2W=100$ Hz. Ideal sampling is modelled as multiplication by an impulse train, which gives $M_s(f)=f_s\sum_k M(f-kf_s)$: copies of $M(f)$ centred at multiples of $f_s$. The simulation uses a fine grid of 16000 Hz over a 1 s window, so every sampling rate used is an exact whole number of grid points. The sampler, the ideal low-pass filter (LPF), the pulse train and the equalizer are all written by hand, with no toolbox functions.
 \samplingfig{Octave Scripts/digA_items1to3_figures/00_message.png}{The message $m(t)$ and its spectrum: lines at $\pm20$ Hz (0.5) and $\pm50$ Hz (0.25).}
