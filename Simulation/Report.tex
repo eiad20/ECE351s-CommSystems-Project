@@ -319,4 +319,131 @@ endfor
 
 \noindent\textbf{e.} Both line codes have their respective advantages: AMI is better for error detection and transmission over AC-coupled channels, while polar NRZ has better noise margins due to the larger difference between its levels. For a real link I would choose AMI since it is better for transmission, has error detection capability, and is more transparent.
 
+
+% =====================================================================
+% Digital Part B, Item 2 -- Digital Modulation (BPSK)
+% Paste this block into Report.tex right after the "Line Coding"
+% subsubsection (before \end{document}).
+% Needs no new packages. Figures are read from
+%   Octave Scripts/digB_2_figures/   (same relative style as the other items)
+% =====================================================================
+\subsubsection{Digital Modulation (BPSK)}
+Our group selected \textbf{binary phase-shift keying (BPSK)} for the digital modulation item. The line code compared in Item~1 is AMI against polar NRZ, so AMI is the line code used in part~(e). We kept the normalized units of Item~1: bit duration $T_b = 1$ second, so the bit rate is $R_b = 1$ bit/s and every frequency below can also be read in units of $R_b$. The carrier is $f_c = 10$ Hz, which is higher than the bit rate as required (ten full carrier cycles per bit), with amplitude $A = 1$ V. The bit stream has 64 bits and is generated randomly by the program. The simulation grid is 1000 Hz (1000 samples per bit). The modulator, mixer, low-pass filter (LPF), bit decision and power spectral density (PSD) estimator are all written by hand, with no communication-toolbox functions.
+
+\medskip
+\noindent\textbf{a.} \textit{Transmitter and coherent receiver.} In BPSK the carrier phase is $0$ for a bit 1 and $\pi$ for a bit 0, which is the product of the polar NRZ waveform $b(t) = \pm 1$ of Item~1 and the carrier:
+\begin{equation}
+s(t) = A\, b(t) \cos(2\pi f_c t)
+\end{equation}
+The coherent receiver multiplies the received signal by a local oscillator (LO) $2\cos(2\pi f_c t + \phi)$, where $\phi$ is the LO phase error:
+\begin{equation}
+v(t) = s(t)\cdot 2\cos(2\pi f_c t + \phi) = A\, b(t)\left[\cos\phi + \cos(4\pi f_c t + \phi)\right]
+\end{equation}
+An ideal LPF (a brick-wall mask applied in the frequency domain, cut-off $4R_b = 4$ Hz) removes the term at $2f_c = 20$ Hz and leaves $y(t) = A\, b(t) \cos\phi$. The decision device samples $y(t)$ in the middle of every bit and decides bit 1 if the sample is positive and bit 0 otherwise.
+\begin{lstlisting}
+s = A*b.*cos(2*pi*fc*t);                          % BPSK transmitter
+for i = 1:numel(phis)
+  v = s .* (2*cos(2*pi*fc*t + phis(i)*pi/180));   % coherent detector: mixer
+  y(i,:) = applyH(v, Hlp);                        % ideal LPF in the frequency domain
+  rxBits(i,:) = double(y(i,mid) > 0);             % mid-bit sample, threshold = 0
+  nErr(i) = sum(rxBits(i,:) ~= bits);
+end
+\end{lstlisting}
+
+\medskip
+\noindent\textbf{b.} \textit{Waveforms and spectra.} The next figure shows the transmitter output for the first 8 bits. The carrier phase flips by $180^\circ$ exactly where the data changes between 1 and 0.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{Octave Scripts/digB_2_figures/01_item2b_tx.png}
+  \caption{Item 2(b): BPSK transmitter output $s(t)$ overlaid on the data $b(t)$ for the first 8 bits (top), and PSD of the transmitted signal, simulation overlaid on theory (bottom).}
+\end{figure}
+
+\noindent The PSD was obtained by averaging the periodograms of 256 random blocks of 64 bits, each multiplied by a Hann window. Every block uses a random carrier phase. Because $f_c = 10R_b$ is an exact multiple of the bit rate, a carrier locked to the bit clock would make the two spectral images add coherently in the tails and the estimate would sit about 30\% above the textbook formula. A random phase models a link whose carrier has no fixed relation to the bit timing, which is what the standard result assumes. The simulated PSD then agrees with the theory:
+\begin{equation}
+S_s(f) = \frac{A^2 T_b}{4}\left[\operatorname{sinc}^2\!\big((f - f_c)T_b\big) + \operatorname{sinc}^2\!\big((f + f_c)T_b\big)\right]
+\end{equation}
+It is the sinc$^2$ spectrum of polar NRZ translated to $\pm f_c$. The first nulls are at $f_c \pm R_b$ (measured at $f_c + 1.000$ Hz), so the \textbf{null-to-null transmission bandwidth is $2R_b = 2$ Hz}, which is the bandwidth required in practice. With the project's 1\% criterion the bandwidth is much larger, $77.0$ Hz from the simulation ($75.1$ Hz from the theory curve), because the sinc tails of rectangular pulses decay slowly: the amplitude spectrum only drops below 1\% of its maximum at about $32R_b$ from the carrier, and the tail of the opposite image adds a little to this.
+
+\noindent The next figure shows the receiver output. The detector output $y(t)$ follows the data apart from the ripple caused by the LPF cut-off. The sampled values are the correct bits, and the PSD at the receiver output is the PSD of the baseband data, which is the PSD of the transmitted $b(t)$ cut at 4 Hz. Its main lobe is $R_b = 1$ Hz wide, half of the passband bandwidth, since the modulation doubled it.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{Octave Scripts/digB_2_figures/02_item2b_rx.png}
+  \caption{Items 2(b) and 2(d): coherent receiver output with the mid-bit sampling instants (top), transmitted bits overlaid on received bits (middle), and PSD at the receiver output overlaid on the PSD of the transmitted data (bottom).}
+\end{figure}
+
+\medskip
+\noindent\textbf{c.} \textit{LO phase error.} After the LPF, $y(t) = A\, b(t)\cos\phi$, so a phase error does not distort the waveform; it scales the detected amplitude by $\cos\phi$ (the measured values relative to the $\phi = 0^\circ$ case agree with $\cos\phi$ to four decimals):
+\begin{itemize}
+  \item $\phi = 30^\circ$: amplitude $\cos 30^\circ = 0.866$ of the ideal value. The signal is still positive for every 1 and negative for every 0, so the decisions are still correct, but the noise margin falls by $13.4\%$.
+  \item $\phi = 60^\circ$: amplitude $\cos 60^\circ = 0.500$. The decisions are still correct, but the margin is halved.
+  \item $\phi = 90^\circ$: amplitude $\cos 90^\circ = 0$ (\textbf{quadrature null}). The LO is in quadrature with the carrier, so the mixer output contains only a term at $2f_c$ and the detector output is zero. The decision is made on a value below $7\times 10^{-5}$ V, which is arbitrary.
+\end{itemize}
+For $\phi > 90^\circ$, $\cos\phi$ is negative and every bit would be detected inverted.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{Octave Scripts/digB_2_figures/03_item2c_phase.png}
+  \caption{Item 2(c): detector output for LO phase errors of $0^\circ$, $30^\circ$, $60^\circ$ and $90^\circ$ overlaid on the data (top), and recovered amplitude relative to $\phi = 0^\circ$ overlaid on $\cos\phi$ (bottom).}
+\end{figure}
+
+\medskip
+\noindent\textbf{d.} \textit{Bit errors.} With the correct oscillator phase the received stream is identical to the transmitted one: \textbf{0 errors out of 64 bits}. With the phase errors of part~(c), the noiseless channel gives $0$ errors for $30^\circ$ and $60^\circ$, because only the amplitude is reduced, and $31$ errors out of 64 for $90^\circ$. The 31 errors at $90^\circ$ are not a meaningful number in themselves: the decisions are made on an essentially zero signal, so each bit is a coin flip and about half of the bits are wrong. The $30^\circ$ and $60^\circ$ cases only show their cost once noise is present. As an extra investigation, we added white Gaussian noise at $E_b/N_0 = 6$ dB and sent 20000 bits through the same receiver (integrate-and-dump detector). The bit error rate then follows $P_e = \tfrac{1}{2}\operatorname{erfc}\!\big(\sqrt{E_b/N_0}\,\cos\phi\big)$, which is equivalent to a loss of $-20\log_{10}\cos\phi$ dB in signal-to-noise ratio ($1.25$ dB at $30^\circ$, $6.02$ dB at $60^\circ$).
+
+\begin{table}[H]
+\centering
+\caption{Effect of the LO phase error on the BPSK receiver}
+\begin{tabular}{c c c c c}
+\toprule
+\textbf{$\phi$} & \textbf{Amplitude} & \textbf{Errors (no noise)} & \textbf{BER, sim.} & \textbf{BER, theory} \\
+\midrule
+$0^\circ$  & $1.000$ & 0 / 64  & $2.35\times 10^{-3}$ & $2.39\times 10^{-3}$ \\
+$30^\circ$ & $0.866$ & 0 / 64  & $7.30\times 10^{-3}$ & $7.27\times 10^{-3}$ \\
+$60^\circ$ & $0.500$ & 0 / 64  & $7.59\times 10^{-2}$ & $7.91\times 10^{-2}$ \\
+$90^\circ$ & $0.000$ & 31 / 64 & $0.502$              & $0.500$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{Octave Scripts/digB_2_figures/05_extra_ber_vs_phase.png}
+  \caption{Extra: BPSK bit error rate against LO phase error at $E_b/N_0 = 6$ dB, simulation (20000 bits) overlaid on theory.}
+\end{figure}
+
+\medskip
+\noindent\textbf{e.} \textit{Effect of the line code.} We replaced the polar NRZ waveform by the AMI waveform of Item~1 (marks alternate between $+1$ and $-1$ in half-width pulses, spaces are $0$) as the modulating signal. The modulator is a product, so the transmitted PSD is simply the PSD of the line code translated to $\pm f_c$. For AMI, $S_{\text{AMI}}(f) = \frac{A^2 T_b}{4}\operatorname{sinc}^2(fT_b/2)\sin^2(\pi f T_b)$, and the modulated PSD is $\frac{1}{4}\left[S_{\text{AMI}}(f - f_c) + S_{\text{AMI}}(f + f_c)\right]$. The line code therefore changes the transmitted spectrum in four ways:
+\begin{itemize}
+  \item \textbf{Notch at the carrier.} AMI has no power at DC, so the modulated signal has a notch at $f_c$ with two lobes peaking near $f_c \pm 0.5R_b$, while the BPSK of polar NRZ has its maximum at $f_c$.
+  \item \textbf{Same null-to-null width.} The first nulls are still at $f_c \pm R_b$, so the main lobe still spans $2R_b = 2$ Hz.
+  \item \textbf{Less power.} For the same pulse amplitude the average transmitted power drops from $0.500$ V$^2$ to $0.128$ V$^2$ (theory $0.125$ V$^2$), because only half of the bits are marks and each mark fills only half of the bit.
+  \item \textbf{Wider 1\% bandwidth.} It grows from $77.0$ Hz to $137.3$ Hz (theory curve $134.8$ Hz): the sidelobe tails of the two signals are similar, but the AMI peak is about 7 dB lower, so the same tails are a larger fraction of the maximum.
+\end{itemize}
+The signal also loses its constant envelope: it takes three amplitude levels ($0$ and $\pm 1$), which needs a linear amplifier. The receiver still works: after the same mixer, integrating over the first half of every bit decodes the AMI stream with \textbf{0 errors}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{Octave Scripts/digB_2_figures/04_item2e_linecode.png}
+  \caption{Item 2(e): carrier modulated by the AMI waveform, first 8 bits (top), and transmitted PSD around the carrier for polar NRZ and AMI, simulation overlaid on theory (bottom).}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Numerical results for Digital Part B, Item 2 (BPSK, $R_b = 1$ bit/s, $f_c = 10$ Hz)}
+\begin{tabular}{l c}
+\toprule
+\textbf{Parameter / Metric} & \textbf{Value} \\
+\midrule
+Null-to-null bandwidth, polar NRZ BPSK & $2.00$ Hz ($=2R_b$) \\
+1\% bandwidth, polar NRZ BPSK (simulated / theory curve) & $77.0$ Hz / $75.1$ Hz \\
+1\% bandwidth, AMI-modulated carrier (simulated / theory curve) & $137.3$ Hz / $134.8$ Hz \\
+Average power, polar NRZ BPSK / AMI-modulated carrier & $0.500$ V$^2$ / $0.128$ V$^2$ \\
+Bit errors, $\phi = 0^\circ$ / $30^\circ$ / $60^\circ$ / $90^\circ$ (64 bits, no noise) & 0 / 0 / 0 / 31 \\
+Detected amplitude, $\phi = 30^\circ$ / $60^\circ$ / $90^\circ$ (relative to $\phi = 0^\circ$) & $0.866$ / $0.500$ / $0$ \\
+Bit errors, AMI-modulated carrier (64 bits, no noise) & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \end{document}
