@@ -78,8 +78,8 @@ Both use $f_s=400$ Hz ($T_s=2.5$ ms) and a duty cycle of 25\%, so the pulse widt
 
 Natural samples are recovered with an LPF of gain $1/d$, where $d=0.25$. Flat-top samples are recovered with the same filter plus an equalizer $1/\operatorname{sinc}(f\tau)$ and a delay correction of $\tau/2$. At the band edge, $\operatorname{sinc}(50\tau)=0.99839$, which is a droop of 0.0140 dB (0.16\%), and $\operatorname{sinc}(20\tau)=0.99974$. The equalizer therefore needs only about $+0.014$ dB at 50 Hz. The effect is small because $\tau$ is much shorter than $T_s$.
 
-\samplingfig{Octave Scripts/digA_items1to3_figures/04_item3_time.png}{Natural and flat-top sampled signals in time.}
-\samplingfig{Octave Scripts/digA_items1to3_figures/05_item3_spectra.png}{Spectra of natural and flat-top sampling with the $\operatorname{sinc}(f\tau)$ envelope.}
+\samplingfig{Octave Scripts/digA_items1to3_figures/04_item3_time.png}{Natural and flat-top sampled signals overlaid on the same axes together with $m(t)$ ($f_s=400$ Hz, 25\% duty): natural pulse tops follow $m(t)$, flat-top tops are constant.}
+\samplingfig{Octave Scripts/digA_items1to3_figures/05_item3_spectra.png}{Spectra of natural and flat-top sampling overlaid on the same axes with the $\operatorname{sinc}(f\tau)$ envelope: natural copies are constant-scaled, flat-top copies are multiplied by $\operatorname{sinc}(f\tau)$.}
 \samplingfig{Octave Scripts/digA_items1to3_figures/06_item3_recovery.png}{Recovery from natural and flat-top samples, recovery error, and aperture droop against equalizer gain.}
 
 \begin{lstlisting}

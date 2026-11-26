@@ -203,22 +203,22 @@ ratio50 = lineAt(S_flat,50)/lineAt(S_nat,50);
 
 figure('Name','Item3 time');
 tw = t<=0.008;
-subplot(2,1,1); plot(t(tw),m(tw),'b'); hold on; stairs(t(tw),m_nat(tw),'r','LineWidth',1.1);
-grid on; xlabel('Time (s)'); ylabel('Amplitude (V)'); leg('m(t)','natural sampled');
-title('Natural sampling (25 % duty, f_s = 400 Hz): pulse tops follow m(t)');
-subplot(2,1,2); plot(t(tw),m(tw),'b'); hold on; stairs(t(tw),m_flat(tw),'r','LineWidth',1.1);
-grid on; xlabel('Time (s)'); ylabel('Amplitude (V)'); leg('m(t)','flat-top sampled');
-title('Flat-top sampling: pulse tops are constant');
+plot(t(tw),m(tw),'b','LineWidth',1.2); hold on;
+stairs(t(tw),m_nat(tw),'r','LineWidth',1.8);
+stairs(t(tw),m_flat(tw),'g--','LineWidth',1.5);
+grid on; xlabel('Time (s)'); ylabel('Amplitude (V)');
+leg('m(t)','natural sampled','flat-top sampled');
+title({'Natural vs flat-top sampling (25 % duty, f_s = 400 Hz)','natural tops follow m(t), flat-top tops are constant'});
 if saveFigs, savefig_('04_item3_time'); end
 
 figure('Name','Item3 spectra');
 env = 0.5*d*abs(mysinc(f*tau));                     % sinc envelope for the 20 Hz lines
-subplot(2,1,1); plot(f,abs(S_nat),'r'); hold on; plot(f,env,'k--'); grid on; xlim([-2000 2000]); ylim([0 0.15]);
-xlabel('Frequency (Hz)'); ylabel('|S(f)|'); leg('natural','envelope d\cdot sinc(f\tau)\cdot0.5');
-title('Natural: each copy is an undistorted, constant-scaled copy of M(f)');
-subplot(2,1,2); plot(f,abs(S_flat),'r'); hold on; plot(f,env,'k--'); grid on; xlim([-2000 2000]); ylim([0 0.15]);
-xlabel('Frequency (Hz)'); ylabel('|S(f)|'); leg('flat-top','envelope d\cdot sinc(f\tau)\cdot0.5');
-title('Flat-top: every copy (including base-band) is multiplied by sinc(f\tau)');
+plot(f,abs(S_nat),'r','LineWidth',1.8); hold on;
+plot(f,abs(S_flat),'g--','LineWidth',1.3);
+plot(f,env,'k:','LineWidth',1.2); grid on; xlim([-2000 2000]); ylim([0 0.15]);
+xlabel('Frequency (Hz)'); ylabel('|S(f)|');
+leg('natural','flat-top','envelope d\cdot sinc(f\tau)\cdot0.5');
+title({'Natural vs flat-top spectra (f_s = 400 Hz)','natural copies are constant-scaled, flat-top copies are also multiplied by sinc(f\tau)'});
 if saveFigs, savefig_('05_item3_spectra'); end
 
 figure('Name','Item3 recovery','Position',[50 30 1250 900]);   % wider/taller so titles, legends and labels fit
