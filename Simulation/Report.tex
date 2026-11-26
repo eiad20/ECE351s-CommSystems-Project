@@ -1,9 +1,12 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{geometry}
+
+\newgeometry{margin=1in}
 
 \lstset{language=Octave, basicstyle=\ttfamily\small, 
         keywords={for, if, else, endif, endfor, ones, zeros},
@@ -96,17 +99,11 @@ AMI = [];
 high = 1;
 
 P_NRZ = [];
-for (i = bit_stream)
-  if (i==1)
-    AMI = [AMI, high*ones(1, 1/(2*dt)), zeros(1, 1/(2*dt))];
-    high *= -1;
+for (d = bit_stream)
+  AMI = [AMI,  d*high*ones(1, 1/(2*dt)), zeros(1, 1/(2*dt))];
+  high *= (-1)^d;
 
-    P_NRZ = [P_NRZ, ones(1, 1/dt)];
-  else
-    AMI = [AMI, zeros(1, 1/dt)];
-
-    P_NRZ = [P_NRZ, -1*ones(1, 1/dt)];
-  endif
+  P_NRZ = [P_NRZ, (2*d-1)*ones(1, 1/dt)];
 endfor
 \end{lstlisting}
 
@@ -115,14 +112,33 @@ endfor
 
 \begin{figure*}[h]
   \centering
-  \includegraphics*[width=0.6\textwidth]{"Octave Scripts/digB_1_figures/time_domain_waveform.png"}
+  \includegraphics*[width=.9\textwidth]{"Octave Scripts/digB_1_figures/time_domain_waveform.png"}
 \end{figure*}
 \noindent
+To get an accurate power spectral density (\textit{PSD}) we randomly generated a 16384 bit stream which was used to generate the spectrums.
+After calculating the spectrums we obtained the PSDs shown in the next figure.
 
-\textbf{c.} The first null for both line codes happens at unity when $T_b = 1$, generally, the first null is at $\frac{1}{T_b}$ for both.
+\begin{figure*}[h]
+  \centering
+  \includegraphics*[width=\textwidth]{"Octave Scripts/digB_1_figures/Power_16384bits.png"}
+\end{figure*}
+\noindent
+\textbf{c.} The first null for both line codes happens at unity for $T_b = 1$, generally, the first null is at $\frac{1}{T_b}$ for both.
 Neither one contains a DC component, but polar NRZ has significant power spectrum at low frequencies, which can cause information loss in transformer-coupled circuits since they filter out low frequencies.
+While AMI has low power spectrum at low frequencies, so it has more reliable transmission over AC-coupled channels.
 
-\textbf{d.} 
+\noindent
+\textbf{d.} We can see in the next figure that for the pattern 10101010 the clock can be recovered from either line code.
+But for the pattern 11111111, we can only recover the clock from AMI since it returns to zero and has alternating polarity making each individual pulse distinguishable, while polar NRZ produces a constant HIGH signal.
+And for the pattern 00000000, the clock can NOT be recovered from either of them since both produce a constant signal.
+Neither of the line codes is fully transparent, but AMI is better in this regard.
 
+\begin{figure*}[h]
+  \centering
+  \includegraphics*[width=\textwidth]{"Octave Scripts/digB_1_figures/CLK_Recovery_Patterns.png"}
+\end{figure*}
+\noindent
+\textbf{e.} Both lines codes have their respective advantages, AMI is better for error detection and transmission over AC-coupled channels, while polar NRZ has better noise margins due to the higher difference between its levels.
+For a real link I would choose AMI since it is better for transmission, has error detection capability, and it is more transparent.
 
 \end{document}
