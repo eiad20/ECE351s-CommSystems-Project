@@ -5,10 +5,13 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
 
 \newgeometry{margin=1in}
 
-\lstset{language=Octave, basicstyle=\ttfamily\small, 
+\lstset{language=Octave, basicstyle=\ttfamily\small,
         keywords={for, if, else, endif, endfor, ones, zeros},
         keywordstyle=\color{purple}, commentstyle=\color{gray}, stringstyle=\color{blue}}
 
@@ -20,18 +23,18 @@
         \vspace*{-0.5in}
         \includegraphics[width=100pt]{180207 ASU-Logo-Black-4000.png}
         \\ \vspace{15pt}
-		\textbf{\huge Communication Systems Project Report}
+        \textbf{\huge Communication Systems Project Report}
         \\ \vspace{30pt}
         \Large Ain Shams University \\ Faculty of Engineering
         \\ \vspace{15pt}
         \textbf{Under the Supervision of}
         \\
         \textit{\Large Dr. Mazen Erfan}\\
-        \text{\Large Dr. Alaa El-Deen Fathy }
+        \textit{\Large Dr. Alaa El-Deen Fathy}
         \\[1.5cm]
         \textbf{\Large Team Members}
         \\[0.5cm]
-        \begin{tabular} { c  c  c  c }
+        \begin{tabular}{c c c c}
             \textbf{Name} & \textbf{Code} & \textbf{Dept.} & \textbf{Sec.} \\[5pt]
             \hline \\[-10pt]
             \textit{\large \textbf{Farida Hatem Mostafa Reda}} & \textit{\large 2401395} & \large CSE & \textit{\large 3} \\
@@ -45,10 +48,189 @@
             \textit{\large Moaaz Mostafa Ibrahim Ahmed} & \textit{\large 2400862} & \large ECE & \textit{\large 3} \\
             \textit{\large Ahmed Gamal Roushdy} & \textit{\large 2400315} & \large ECE & \textit{\large 3} \\
         \end{tabular}
-	\end{center}
+    \end{center}
 \pagebreak
 
 \section{Analog Communication}
+\subsection{Part A: Amplitude Modulation}
+
+\subsubsection{Item 5: Double Sideband - Suppressed Carrier (DSB-SC) Modulation}
+
+\paragraph{Theoretical Derivation and Spectral Analysis.}
+The baseband message signal $m(t)$ is defined over a 5-second interval as:
+\begin{equation}
+m(t) = \begin{cases} \cos(2\pi f_m t), & 0 \le t < 5\text{ s} \\ 0, & \text{otherwise} \end{cases}
+\end{equation}
+where $f_m = 20\text{ Hz}$. The high-frequency sinusoidal carrier signal is given by $c(t) = \cos(2\pi f_c t)$ with $f_c = 200\text{ Hz}$.
+
+The DSB-SC modulated waveform $s_{\text{DSB}}(t)$ is produced by multiplying the message signal directly by the carrier:
+\begin{equation}
+s_{\text{DSB}}(t) = m(t) \cdot c(t) = \cos(2\pi f_m t) \cos(2\pi f_c t)
+\end{equation}
+Applying the trigonometric product identity yields:
+\begin{equation}
+s_{\text{DSB}}(t) = \frac{1}{2} \cos\left(2\pi (f_c - f_m) t\right) + \frac{1}{2} \cos\left(2\pi (f_c + f_m) t\right)
+\end{equation}
+
+Taking the Fourier Transform of $s_{\text{DSB}}(t)$:
+\begin{equation}
+S_{\text{DSB}}(f) = \frac{1}{2} \left[ M(f - f_c) + M(f + f_c) \right]
+\end{equation}
+
+The spectrum consists of two discrete sidebands symmetric about the origin:
+\begin{itemize}
+    \item \textbf{Upper Sideband (USB):} Located at $\pm (f_c + f_m) = \pm 220\text{ Hz}$ with spectral magnitude $0.25$.
+    \item \textbf{Lower Sideband (LSB):} Located at $\pm (f_c - f_m) = \pm 180\text{ Hz}$ with spectral magnitude $0.25$.
+    \item \textbf{Carrier Component:} At $f = \pm f_c = \pm 200\text{ Hz}$, the spectrum magnitude is zero, confirming carrier suppression.
+\end{itemize}
+
+Using the 1\% maximum spectral magnitude threshold criterion, the theoretical bandwidth is:
+\begin{equation}
+B_{\text{DSB-SC}} = 2 f_m = 2 \times 20\text{ Hz} = 40\text{ Hz}
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Octave Scripts/Analog_PA_I5abc_Figs/Item5(a).png}
+    \caption{Item 5(a): Time-domain DSB-SC modulated waveform $s_{\text{DSB}}(t)$ with message envelope overlay (top) and magnitude spectrum $|S_{\text{DSB}}(f)|$ displaying carrier suppression (bottom).}
+    \label{fig:dsbsc_signal}
+\end{figure}
+
+\paragraph{Coherent Demodulation.}
+Coherent detection requires multiplying $s_{\text{DSB}}(t)$ at the receiver by a local oscillator matched perfectly in frequency and phase ($2\cos(2\pi f_c t)$):
+\begin{equation}
+v(t) = s_{\text{DSB}}(t) \cdot \left[2 \cos(2\pi f_c t)\right] = 2 m(t) \cos^2(2\pi f_c t)
+\end{equation}
+Using $\cos^2(\theta) = \frac{1 + \cos(2\theta)}{2}$:
+\begin{equation}
+v(t) = m(t) \left[1 + \cos(4\pi f_c t)\right] = \underbrace{m(t)}_{\text{Baseband Message}} + \underbrace{m(t) \cos(4\pi f_c t)}_{\text{High-Frequency Component at } 2f_c = 400\text{ Hz}}
+\end{equation}
+
+Passing $v(t)$ through a frequency-domain Low-Pass Filter (LPF) with cutoff frequency $W = 30\text{ Hz}$ eliminates the $400\text{ Hz}$ component, yielding complete message recovery:
+\begin{equation}
+\hat{m}(t) = \text{LPF}\{v(t)\} = m(t)
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Octave Scripts/Analog_PA_I5abc_Figs/Item5(b).png}
+    \caption{Item 5(b): Coherent detector output ($\phi = 0^\circ$) overlaid on the original message $m(t)$.}
+    \label{fig:coherent_ideal}
+\end{figure}
+
+\paragraph{Effect of Local Oscillator Phase Error.}
+If the local oscillator has a phase error $\phi$, such that $c_{\text{local}}(t) = 2 \cos(2\pi f_c t + \phi)$, the product signal becomes:
+\begin{equation}
+v_\phi(t) = 2 m(t) \cos(2\pi f_c t) \cos(2\pi f_c t + \phi) = m(t) \left[ \cos(\phi) + \cos(4\pi f_c t + \phi) \right]
+\end{equation}
+
+After low-pass filtering:
+\begin{equation}
+\hat{m}_\phi(t) = m(t) \cos(\phi)
+\end{equation}
+
+The recovered amplitude scales with $\cos(\phi)$:
+\begin{itemize}
+    \item \textbf{For $\phi = 30^\circ$:} $\hat{m}(t) = m(t) \cos(30^\circ) = 0.866\, m(t)$ ($13.4\%$ amplitude reduction).
+    \item \textbf{For $\phi = 60^\circ$:} $\hat{m}(t) = m(t) \cos(60^\circ) = 0.500\, m(t)$ ($50.0\%$ amplitude reduction).
+    \item \textbf{For $\phi = 90^\circ$:} $\hat{m}(t) = m(t) \cos(90^\circ) = 0$ (\textbf{Quadrature Null Effect}).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Octave Scripts/Analog_PA_I5abc_Figs/Item5(c).png}
+    \caption{Item 5(c): Demodulated signal degradation across local oscillator phase errors $\phi \in \{30^\circ, 60^\circ, 90^\circ\}$.}
+    \label{fig:phase_errors}
+\end{figure}
+
+\subsubsection{Item 7: Conventional Amplitude Modulation (AM) and Envelope Detector}
+
+\paragraph{Conventional AM Modulation ($k_a = 0.4$).}
+Conventional AM is generated by adding a DC carrier component prior to modulation:
+\begin{equation}
+s_{\text{AM}}(t) = A_c \left[ 1 + k_a m(t) \right] \cos(2\pi f_c t)
+\end{equation}
+For $A_c = 1$, $k_a = 0.4$, and $m(t) = \cos(2\pi \cdot 20 \cdot t)$:
+\begin{equation}
+s_{\text{AM}}(t) = \left[ 1 + 0.4 \cos(2\pi \cdot 20 \cdot t) \right] \cos(2\pi \cdot 200 \cdot t)
+\end{equation}
+The modulation index is $\mu = k_a \cdot \max|m(t)| = 0.4$ ($40\%$ modulation).
+
+The spectrum contains a discrete carrier component at $\pm 200\text{ Hz}$ of magnitude $0.5$, and two sidebands at $\pm 180\text{ Hz}$ and $\pm 220\text{ Hz}$ of magnitude $0.1$. The bandwidth remains $B_{\text{AM}} = 2 f_m = 40\text{ Hz}$.
+
+\paragraph{Envelope Detector Performance and Choice of $RC$.}
+Demodulation is performed using a diode-capacitor envelope detector governed by the discrete charging and discharging update equations. To avoid carrier ripple and diagonal clipping, $RC$ must satisfy:
+\begin{equation}
+\frac{1}{f_c} \ll RC \ll \frac{1}{f_m} \implies 0.005\text{ s} \ll RC \ll 0.050\text{ s}
+\end{equation}
+Furthermore, the non-clipping constraint is given by:
+\begin{equation}
+RC \le \frac{\sqrt{1 - \mu^2}}{2\pi f_m \mu} = \frac{\sqrt{1 - 0.4^2}}{2\pi \times 20 \times 0.4} \approx 0.0182\text{ s}
+\end{equation}
+
+Selecting $RC_{\text{opt}} = 0.015\text{ s}$ satisfies all bounds. The performance of three distinct $RC$ values is evaluated:
+\begin{itemize}
+    \item $RC = 0.001\text{ s}$ ($RC \ll 1/f_c$): Discharges too rapidly between carrier peaks, introducing excessive high-frequency carrier ripple.
+    \item $RC = 0.015\text{ s}$ (Optimal): Discharges at a rate matching the maximum downward slope of the message envelope.
+    \item $RC = 0.100\text{ s}$ ($RC > \text{bound}$): Discharges too slowly, failing to follow the falling envelope and causing \textbf{diagonal clipping}.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Octave Scripts/Analog_PA_I7abc_Figs/Item7(a)(b).png}
+        \caption{Spectrum and Optimal Envelope Detection ($k_a = 0.4$, $RC = 0.015\text{ s}$)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Octave Scripts/Analog_PA_I7abc_Figs/Item7(b).png}
+        \caption{Envelope Detector Output vs.\ $RC$}
+    \end{subfigure}
+    \caption{Item 7(a \& b): Conventional AM spectrum, modulated signal, and envelope detector tracking across different $RC$ relaxation time constants.}
+    \label{fig:am_ka04}
+\end{figure}
+
+\paragraph{Over-Modulation Analysis ($k_a = 1.5$).}
+When the amplitude sensitivity is increased to $k_a = 1.5$, the modulation index becomes $\mu = 1.5 > 1.0$ ($150\%$ modulation).
+
+When $m(t) < -1/1.5 = -0.667$, the envelope term $(1 + 1.5\, m(t))$ becomes negative, causing a $180^\circ$ carrier phase reversal and envelope crossovers. Because a non-coherent envelope detector tracks the absolute envelope magnitude $|1 + 1.5\, m(t)|$, the negative portion of the envelope is rectified upward, producing severe non-linear harmonic distortion in the recovered message.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Octave Scripts/Analog_PA_I7abc_Figs/Item7(c).png}
+    \caption{Item 7(c): Over-modulated AM spectrum ($k_a = 1.5$, top) and waveform with envelope detector output demonstrating severe rectification distortion (bottom).}
+    \label{fig:overmodulation}
+\end{figure}
+
+\subsubsection{Summary of Results}
+
+Table~\ref{tab:results_summary} summarizes all theoretical and simulated metrics obtained for Part A (Items 5 \& 7).
+
+\begin{table}[H]
+\centering
+\caption{Consolidated Numerical Results for Analog AM Systems}
+\label{tab:results_summary}
+\begin{tabular}{l c c c}
+\toprule
+\textbf{Parameter / Metric} & \textbf{DSB-SC} & \textbf{AM ($k_a = 0.4$)} & \textbf{AM ($k_a = 1.5$)} \\
+\midrule
+Carrier Frequency ($f_c$) & $200\text{ Hz}$ & $200\text{ Hz}$ & $200\text{ Hz}$ \\
+Message Frequency ($f_m$) & $20\text{ Hz}$ & $20\text{ Hz}$ & $20\text{ Hz}$ \\
+Modulation Index ($\mu$) & N/A & $0.40$ & $1.50$ \\
+Theoretical Bandwidth & $40.00\text{ Hz}$ & $40.00\text{ Hz}$ & $40.00\text{ Hz}$ \\
+Simulated Bandwidth (1\% threshold) & $40.00\text{ Hz}$ & $40.00\text{ Hz}$ & $40.00\text{ Hz}$ \\
+Carrier Spectrum Magnitude & $0.000$ & $0.500$ & $0.500$ \\
+Sideband Spectrum Magnitude & $0.250$ & $0.100$ & $0.375$ \\
+Demodulator Scheme & Coherent Filter & Envelope Detector & Envelope Detector \\
+Optimal Receiver Parameter & $W = 30\text{ Hz}$ & $RC = 0.015\text{ s}$ & $RC = 0.015\text{ s}$ \\
+Demodulation Quality & Perfect ($\phi = 0^\circ$) & Distortion-free & Severe Distortion \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
 \section{Digital Communication}
 \subsection{Sampling, Quantization, and PCM}
 \subsubsection{Sampling}
@@ -91,9 +273,10 @@ for n = 0:fs*T-1
   m_flat(n*N+1 : n*N+w) = m(n*N+1);     % hold the sample for tau
 end
 \end{lstlisting}
+
 \subsection{Line Coding and Digital Modulation}
 \subsubsection{Line Coding}
-\textbf{a.} To be able to compare AMI with polar NRZ, we first need to simulate them using Octave. In our simulation we assumed that the pulse width $T_b=1$ second (to get a normalized frequency spectrum) and that there are $\frac{1}{dt}$ samples per pulse.
+\noindent\textbf{a.} To be able to compare AMI with polar NRZ, we first need to simulate them using Octave. In our simulation we assumed that the pulse width $T_b=1$ second (to get a normalized frequency spectrum) and that there are $\frac{1}{dt}$ samples per pulse.
 \begin{lstlisting}
 AMI = [];
 high = 1;
@@ -107,38 +290,33 @@ for (d = bit_stream)
 endfor
 \end{lstlisting}
 
-\noindent
-\textbf{b.} The waveforms of 64 randomly generated bits are in the next figure.
+\noindent\textbf{b.} The waveforms of 64 randomly generated bits are shown in the next figure.
 
-\begin{figure*}[h]
+\begin{figure}[H]
   \centering
-  \includegraphics*[width=.9\textwidth]{"Octave Scripts/digB_1_figures/time_domain_waveform.png"}
-\end{figure*}
-\noindent
-To get an accurate power spectral density (\textit{PSD}) we randomly generated a 16384 bit stream which was used to generate the spectrums.
-After calculating the spectrums we obtained the PSDs shown in the next figure.
+  \includegraphics[width=0.9\textwidth]{Octave Scripts/digB_1_figures/time_domain_waveform.png}
+  \caption{Time-domain waveforms of AMI and Polar NRZ for 64 random bits.}
+\end{figure}
 
-\begin{figure*}[h]
+\noindent To get an accurate power spectral density (\textit{PSD}), we randomly generated a 16384-bit stream which was used to compute the spectra. After calculating the spectra we obtained the PSDs shown in the next figure.
+
+\begin{figure}[H]
   \centering
-  \includegraphics*[width=\textwidth]{"Octave Scripts/digB_1_figures/Power_16384bits.png"}
-\end{figure*}
-\noindent
-\textbf{c.} The first null for both line codes happens at unity for $T_b = 1$, generally, the first null is at $\frac{1}{T_b}$ for both.
-Neither one contains a DC component, but polar NRZ has significant power spectrum at low frequencies, which can cause information loss in transformer-coupled circuits since they filter out low frequencies.
-While AMI has low power spectrum at low frequencies, so it has more reliable transmission over AC-coupled channels.
+  \includegraphics[width=\textwidth]{Octave Scripts/digB_1_figures/Power_16384bits.png}
+  \caption{Power spectral density (PSD) of AMI and Polar NRZ computed over 16384 bits.}
+\end{figure}
 
-\noindent
-\textbf{d.} We can see in the next figure that for the pattern 10101010 the clock can be recovered from either line code.
-But for the pattern 11111111, we can only recover the clock from AMI since it returns to zero and has alternating polarity making each individual pulse distinguishable, while polar NRZ produces a constant HIGH signal.
-And for the pattern 00000000, the clock can NOT be recovered from either of them since both produce a constant signal.
-Neither of the line codes is fully transparent, but AMI is better in this regard.
+\noindent\textbf{c.} The first null for both line codes occurs at unity for $T_b = 1$; generally, the first null is at $\frac{1}{T_b}$ for both. Neither one contains a DC component, but polar NRZ has significant power spectrum at low frequencies, which can cause information loss in transformer-coupled circuits since they filter out low frequencies. On the other hand, AMI has low power spectrum at low frequencies, so it provides more reliable transmission over AC-coupled channels.
 
-\begin{figure*}[h]
+\medskip
+\noindent\textbf{d.} We can see in the next figure that for the pattern \texttt{10101010} the clock can be recovered from either line code. However, for the pattern \texttt{11111111}, we can only recover the clock from AMI since it returns to zero and has alternating polarity making each individual pulse distinguishable, while polar NRZ produces a constant HIGH signal. For the pattern \texttt{00000000}, the clock can \textit{not} be recovered from either of them since both produce a constant signal. Neither of the line codes is fully transparent, but AMI is better in this regard.
+
+\begin{figure}[H]
   \centering
-  \includegraphics*[width=\textwidth]{"Octave Scripts/digB_1_figures/CLK_Recovery_Patterns.png"}
-\end{figure*}
-\noindent
-\textbf{e.} Both lines codes have their respective advantages, AMI is better for error detection and transmission over AC-coupled channels, while polar NRZ has better noise margins due to the higher difference between its levels.
-For a real link I would choose AMI since it is better for transmission, has error detection capability, and it is more transparent.
+  \includegraphics[width=\textwidth]{Octave Scripts/digB_1_figures/CLK_Recovery_Patterns.png}
+  \caption{Clock recovery comparison of AMI and Polar NRZ for the bit patterns \texttt{10101010}, \texttt{11111111}, and \texttt{00000000}.}
+\end{figure}
+
+\noindent\textbf{e.} Both line codes have their respective advantages: AMI is better for error detection and transmission over AC-coupled channels, while polar NRZ has better noise margins due to the larger difference between its levels. For a real link I would choose AMI since it is better for transmission, has error detection capability, and is more transparent.
 
 \end{document}
