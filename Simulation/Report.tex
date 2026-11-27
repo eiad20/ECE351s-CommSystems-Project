@@ -13,7 +13,8 @@
 
 \lstset{language=Octave, basicstyle=\ttfamily\small,
         keywords={for, if, else, endif, endfor, ones, zeros},
-        keywordstyle=\color{purple}, commentstyle=\color{gray}, stringstyle=\color{blue}}
+        keywordstyle=\color{purple}, commentstyle=\color{gray}, stringstyle=\color{blue},
+        showstringspaces=false}
 
 \renewcommand{\thesubsection}{\thesection.\Alph{subsection}}
 
@@ -229,7 +230,363 @@ Demodulation Quality & Perfect ($\phi = 0^\circ$) & Distortion-free & Severe Dis
 \bottomrule
 \end{tabular}
 \end{table}
+\subsection{Part B: Frequency Modulation}
 
+\subsection{Part C: Frequency Division Multiplexing and the Superheterodyne Receiver}
+
+\subsubsection{Item 1: FDM Signal Generation and Spectral Analysis}
+Three baseband message signals $m_1(t)$, $m_2(t)$, and $m_3(t)$ are generated over a $5\text{ s}$ duration ($f_s = 5000\text{ Hz}$, $25{,}001$ samples, active on $0 < t < 5\text{ s}$) with comparable low-frequency bandwidths around $15\text{--}25\text{ Hz}$:
+\begin{align}
+m_1(t) &= \cos(2\pi \cdot 20\, t) \\
+m_2(t) &= 0.8\cos(2\pi \cdot 15\, t) + 0.5\sin(2\pi \cdot 25\, t) \\
+m_3(t) &= 0.9\cos(2\pi \cdot 18\, t)\exp\!\left(-\frac{(t - 2.5)^2}{2(1.2)^2}\right)
+\end{align}
+
+Each signal is modulated using Double-Sideband Suppressed Carrier (DSB-SC) onto distinct carrier frequencies $f_{c1} = 200\text{ Hz}$, $f_{c2} = 400\text{ Hz}$, and $f_{c3} = 600\text{ Hz}$, and summed to form the composite FDM waveform:
+\begin{equation}
+s_{\text{FDM}}(t) = m_1(t)\cos(2\pi f_{c1} t) + m_2(t)\cos(2\pi f_{c2} t) + m_3(t)\cos(2\pi f_{c3} t)
+\end{equation}
+In the frequency domain, $|S_{\text{FDM}}(f)|$ exhibits pairs of sidebands centered around $\pm 200\text{ Hz}$, $\pm 400\text{ Hz}$, and $\pm 600\text{ Hz}$ with suppressed carrier components.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC1_FDM_Spectrum.png}
+    \caption{Item C.1: Magnitude spectrum $|S_{\text{FDM}}(f)|$ of the three-channel DSB-SC FDM signal showing channels centered at $200\text{ Hz}$, $400\text{ Hz}$, and $600\text{ Hz}$.}
+    \label{fig:fdm_spectrum}
+\end{figure}
+
+\subsubsection{Item 2: Bandwidth, Guard Band, and Minimum Carrier Spacing}
+Using the $1\%$ maximum spectral magnitude criterion on the positive-frequency spectrum, the simulated one-sided bandwidths of the three messages are $B_1 = 19.90\text{ Hz}$, $B_2 = 24.90\text{ Hz}$, and $B_3 = 18.10\text{ Hz}$, giving a maximum baseband bandwidth of $B_{\max} = 24.90\text{ Hz}$. Each DSB-SC channel occupies a passband width of $2B_i$ centered at $f_{ci}$.
+
+With uniform carrier spacing $\Delta f_c = f_{c2} - f_{c1} = f_{c3} - f_{c2} = 200.00\text{ Hz}$, the guard band between adjacent channels (evaluated using the widest channel bandwidth $2B_{\max} = 49.80\text{ Hz}$) is:
+\begin{equation}
+B_{\text{guard}} = \Delta f_c - 2 B_{\max} = 200.00\text{ Hz} - 49.80\text{ Hz} = 150.20\text{ Hz}
+\end{equation}
+To prevent spectral overlap between adjacent channels ($B_{\text{guard}} \ge 0$), the minimum required carrier spacing is:
+\begin{equation}
+\Delta f_{c,\min} = 2 B_{\max} = 49.80\text{ Hz}
+\end{equation}
+
+\subsubsection{Item 3: Superheterodyne Receiver}
+\paragraph{Item 3(a): Channel 1 Reception ($f_{c1} = 200\text{ Hz}$).}
+Using a fixed intermediate frequency $f_{\text{IF}} = 100\text{ Hz}$ and high-side injection ($f_{\text{LO}} = f_c + f_{\text{IF}}$), the local oscillator frequency for Channel~1 is:
+\begin{equation}
+f_{\text{LO},1} = f_{c1} + f_{\text{IF}} = 200\text{ Hz} + 100\text{ Hz} = 300.0\text{ Hz}
+\end{equation}
+Multiplying $s_{\text{FDM}}(t)$ by $\cos(2\pi f_{\text{LO},1} t)$ translates Channel~1 to $f_{\text{IF}} = 100\text{ Hz}$ and $500\text{ Hz}$. An ideal IF band-pass filter $H_{\text{IF}}(f)$ centered at $100\text{ Hz}$ with half-width $\text{BW}_{\text{IF}} = 30\text{ Hz}$ (passband $70\text{--}130\text{ Hz}$) isolates $v_{\text{IF},1}(t)$, which is then coherently demodulated with $\cos(2\pi f_{\text{IF}} t)$ and low-pass filtered ($|f| \le 30\text{ Hz}$) with a gain factor of $4$ to recover $\hat{m}_1(t)$.
+
+\paragraph{Item 3(b): Re-Tuning to Channel 2 and Tuning Range.}
+To tune to Channel~2 ($f_{c2} = 400\text{ Hz}$) using the same IF stage and high-side injection, only the local oscillator frequency is changed:
+\begin{equation}
+f_{\text{LO},2} = f_{c2} + f_{\text{IF}} = 400\text{ Hz} + 100\text{ Hz} = 500.0\text{ Hz}
+\end{equation}
+For Channel~3 ($f_{c3} = 600\text{ Hz}$), $f_{\text{LO},3} = 600 + 100 = 700.0\text{ Hz}$. Tuning across Channels~1 to~3 therefore requires a local oscillator tuning range of $300.0\text{ Hz}$ to $700.0\text{ Hz}$ (a $400.0\text{ Hz}$ span) while keeping $H_{\text{IF}}(f)$ fixed. Because no RF pre-selector filter is placed before the mixer in this stage, $\hat{m}_2(t)$ also experiences minor bleed-through from Channel~3 ($600\text{ Hz}$), which sits at Channel~2's image frequency when $f_{\text{LO},2} = 500.0\text{ Hz}$.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC3a_Ch1_Recovery.png}
+        \caption{Channel 1 ($f_{\text{LO},1} = 300.0\text{ Hz}$)}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC3b_Ch2_Recovery.png}
+        \caption{Channel 2 ($f_{\text{LO},2} = 500.0\text{ Hz}$)}
+    \end{subfigure}
+    \caption{Item C.3: Recovered messages overlaid with original waveforms using the fixed IF filter at $f_{\text{IF}} = 100\text{ Hz}$.}
+    \label{fig:superhet_tuning}
+\end{figure}
+
+\subsubsection{Item 4: Image Frequency Analysis and Mitigation}
+\paragraph{Item 4(a): Image Frequency Calculation.}
+Under high-side injection ($f_{\text{LO}} = f_c + f_{\text{IF}}$), any signal at the image frequency $f_{\text{img}} = f_{\text{LO}} + f_{\text{IF}} = f_c + 2f_{\text{IF}}$ also mixes down to $|f_{\text{img}} - f_{\text{LO}}| = f_{\text{IF}}$. When tuned to Channel~1 ($f_{c1} = 200\text{ Hz}$, $f_{\text{LO},1} = 300.0\text{ Hz}$, $f_{\text{IF}} = 100\text{ Hz}$):
+\begin{equation}
+f_{\text{img},1} = f_{c1} + 2f_{\text{IF}} = 200\text{ Hz} + 2(100\text{ Hz}) = 400.0\text{ Hz} = f_{c2}
+\end{equation}
+Thus, Channel~1's image frequency falls directly on \textbf{Channel~2} ($400.0\text{ Hz}$).
+
+\paragraph{Item 4(b): Demonstration of Image Interference.}
+Without an RF pre-selector filter ahead of the mixer, both Channel~1 ($200\text{ Hz}$) and Channel~2 ($400\text{ Hz}$) lie $100\text{ Hz}$ away from $f_{\text{LO},1} = 300.0\text{ Hz}$ and both pass through the $100\text{ Hz}$ IF filter. After demodulation, the recovered output contains $m_1(t)$ interfered with by $m_2(t)$.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC4b_IF_Spectrum.png}
+        \caption{IF output spectrum with image component}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC4b_Image_Interference.png}
+        \caption{Corrupted demodulated $m_1(t)$}
+    \end{subfigure}
+    \caption{Item C.4(b): Image interference without an RF pre-selector filter.}
+    \label{fig:image_interference}
+\end{figure}
+
+\paragraph{Item 4(c): RF Band-Pass Pre-Selector Filter.}
+Inserting an RF band-pass filter $H_{\text{RF},1}(f)$ with passband $[170, 230]\text{ Hz}$ around $f_{c1} = 200\text{ Hz}$ \emph{before} the mixer attenuates the image band around $[370, 430]\text{ Hz}$ (Channel~2) prior to mixing, yielding clean recovery of $m_1(t)$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC4c_RF_Filter_Recovery.png}
+    \caption{Item C.4(c): Recovered Channel~1 waveform after RF pre-selector filtering rejects the image band, overlaid with $m_1(t)$.}
+    \label{fig:rf_filter_recovery}
+\end{figure}
+
+\paragraph{Item 4(d): Higher Intermediate Frequency ($f_{\text{IF}} = 300\text{ Hz}$).}
+Increasing the intermediate frequency to $f_{\text{IF}} = 300.0\text{ Hz}$ ($f_{\text{LO},1} = 500.0\text{ Hz}$) shifts the image frequencies to $f_{\text{img}} = f_c + 600\text{ Hz}$, giving $800.0\text{ Hz}$, $1000.0\text{ Hz}$, and $1200.0\text{ Hz}$ for Channels~1, 2, and~3—all outside the $200\text{--}600\text{ Hz}$ FDM band.
+\begin{itemize}
+    \item \textbf{Gained:} Image frequencies move outside the FDM signal band, relaxing RF pre-selector selectivity requirements against adjacent FDM channels.
+    \item \textbf{Lost:} Requires a higher-frequency local oscillator tuning range and a higher-center-frequency, higher-$Q$ (sharper) IF filter.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{Octave Scripts/Analog_PC_Figs/ItemC4d_Higher_IF_Recovery.png}
+    \caption{Item C.4(d): Channel~1 recovery with $f_{\text{IF}} = 300.0\text{ Hz}$ ($f_{\text{LO},1} = 500.0\text{ Hz}$, image at $800.0\text{ Hz}$), overlaid with $m_1(t)$.}
+    \label{fig:higher_if_recovery}
+\end{figure}
+\subsubsection{Summary of Numerical Results}
+
+\begin{table}[H]
+    \centering
+    \caption{Summary of numerical results for Analog Part~C.}
+    \label{tab:part_c_summary}
+    \begin{tabular}{ll}
+        \hline
+        \textbf{Parameter} & \textbf{Value} \\
+        \hline
+        
+        Message 1 bandwidth ($B_1$) & $19.90\text{ Hz}$ \\
+        Message 2 bandwidth ($B_2$) & $24.90\text{ Hz}$ \\
+        Message 3 bandwidth ($B_3$) & $18.10\text{ Hz}$ \\
+        Maximum baseband bandwidth ($B_{\max}$) & $24.90\text{ Hz}$ \\
+        
+        Carrier spacing ($\Delta f_c$) & $200.00\text{ Hz}$ \\
+        Guard band ($B_{\text{guard}}$) & $150.20\text{ Hz}$ \\
+        Minimum carrier spacing ($\Delta f_{c,\min}$) & $49.80\text{ Hz}$ \\
+        
+        Local oscillator frequencies ($f_{\text{LO},1}, f_{\text{LO},2}, f_{\text{LO},3}$) & $300.0, 500.0, 700.0\text{ Hz}$ \\
+        Local oscillator tuning range & $300.0\text{--}700.0\text{ Hz}$ ($400.0\text{ Hz}$ span) \\
+        Image frequencies at $f_{\text{IF}} = 100\text{ Hz}$ & $400.0, 600.0, 800.0\text{ Hz}$ \\
+       
+        RF pre-selector passband (Item 4c) & $170\text{--}230\text{ Hz}$ \\
+        Higher intermediate frequency (Item 4d) & $300.0\text{ Hz}$ \\
+        Image frequencies at $f_{\text{IF}} = 300\text{ Hz}$ & $800.0, 1000.0, 1200.0\text{ Hz}$ \\
+        \hline
+    \end{tabular}
+\end{table}
+\subsubsection*{Octave Implementation (Analog Part C).}
+\begin{lstlisting}[frame=single, breaklines=true, basicstyle=\ttfamily\scriptsize]
+clear; close all; clc;
+
+%% 1. Time and Frequency Parameters
+fs = 5000;              % Sampling frequency (Hz)
+Ts = 1/fs;
+t = 0:Ts:5;             % Time vector from 0 to 5 seconds (25,001 samples)
+active = (t > 0) & (t < 5);
+
+%% 2. Baseband Message Signals
+m1 = zeros(size(t));
+m1(active) = cos(2*pi*20*t(active));
+
+m2 = zeros(size(t));
+m2(active) = 0.8*cos(2*pi*15*t(active)) + 0.5*sin(2*pi*25*t(active));
+
+m3 = zeros(size(t));
+m3(active) = 0.9*cos(2*pi*18*t(active)) .* exp(-((t(active) - 2.5).^2) / (2 * 1.2^2));
+
+%% 3. DSB-SC Modulation and FDM Signal
+fc1 = 200;              % Carrier frequencies (Hz) for Channels 1, 2, and 3
+fc2 = 400;
+fc3 = 600;
+
+s1 = m1 .* cos(2*pi*fc1*t);
+s2 = m2 .* cos(2*pi*fc2*t);
+s3 = m3 .* cos(2*pi*fc3*t);
+
+s_fdm = s1 + s2 + s3;
+
+%% 4. FDM Spectrum Calculation and Plot [Item C.1]
+N = length(s_fdm);
+f = (-N/2 : N/2 - 1) * (fs / N);
+S_fdm = abs(fftshift(fft(s_fdm))) / N;
+
+figure;
+plot(f, S_fdm, 'b', 'LineWidth', 1.2);
+grid on;
+xlim([-800 800]);
+title('Spectrum of the FDM Signal');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude |S_{FDM}(f)|');
+
+hold on;
+max_val = max(S_fdm);
+ylim([0 max_val*1.32]);
+text(200, 0.25 + 0.015, 'Ch 1', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
+text(400, 0.20 + 0.015, 'Ch 2', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
+text(600, 0.125 + 0.015, 'Ch 3', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'FontSize', 9);
+legend('|S_{FDM}(f)|', 'Location', 'northwest');
+xticks([-600, -400, -200, 0, 200, 400, 600]);
+
+%% 5. 1% Bandwidth, Guard Band, and Minimum Carrier Spacing [Item C.2]
+pos = (f >= 0);
+f_pos = f(pos);
+msgs = {m1, m2, m3};
+BWs = zeros(1, 3);
+
+for k = 1:3
+    mag_pos = abs(fftshift(fft(msgs{k}))) / N;
+    mag_pos = mag_pos(pos);
+    idx = find(mag_pos >= 0.01 * max(mag_pos), 1, 'last');
+    if ~isempty(idx)
+        BWs(k) = f_pos(idx);
+    end
+end
+
+B1 = BWs(1);
+B2 = BWs(2);
+B3 = BWs(3);
+B_max = max(BWs);
+
+carrier_spacing = fc2 - fc1;                 % 200 Hz spacing
+guard_band = carrier_spacing - 2 * B_max;    % Guard band using widest channel
+min_carrier_spacing = 2 * B_max;             % Minimum spacing without overlap
+
+fprintf('--- Part C Summary Metrics ---\n');
+fprintf('1%% Bandwidths: B1 = %.2f Hz, B2 = %.2f Hz, B3 = %.2f Hz\n', B1, B2, B3);
+fprintf('Carrier Spacing = %.2f Hz | Guard Band = %.2f Hz | Min Spacing = %.2f Hz\n', ...
+    carrier_spacing, guard_band, min_carrier_spacing);
+
+%% 6. Superheterodyne Receiver (f_IF = 100 Hz, High-Side Injection) [Item C.3]
+f_IF = 100;             % Fixed intermediate frequency (Hz)
+BW_IF = 30;             % Passband half-width around f_IF
+
+% 3(a) Tune to Channel 1 (fc1 = 200 Hz)
+f_LO1 = fc1 + f_IF;     % 300 Hz
+
+v_mix1 = s_fdm .* cos(2*pi*f_LO1*t);
+V_mix1 = fftshift(fft(v_mix1));
+H_IF = (abs(f) >= (f_IF - BW_IF)) & (abs(f) <= (f_IF + BW_IF));
+v_IF1 = real(ifft(ifftshift(V_mix1 .* H_IF)));
+
+v_demod1 = v_IF1 .* cos(2*pi*f_IF*t);
+V_demod1 = fftshift(fft(v_demod1));
+H_LPF = abs(f) <= BW_IF;
+m1_rec = 4 * real(ifft(ifftshift(V_demod1 .* H_LPF)));
+
+figure;
+plot(t, m1, 'b', 'LineWidth', 1.5); hold on;
+plot(t, m1_rec, 'r--', 'LineWidth', 1.2);
+grid on; xlim([0 0.2]);
+title('Channel 1 Recovery (f_{LO} = 300 Hz, f_{IF} = 100 Hz)');
+xlabel('Time (s)'); ylabel('Amplitude');
+legend('Original m_1(t)', 'Recovered m_1(t)');
+
+% 3(b) Re-tune to Channel 2 (fc2 = 400 Hz) by changing f_LO only
+f_LO2 = fc2 + f_IF;     % 500 Hz
+f_LO3 = fc3 + f_IF;     % 700 Hz
+
+v_mix2 = s_fdm .* cos(2*pi*f_LO2*t);
+V_mix2 = fftshift(fft(v_mix2));
+v_IF2 = real(ifft(ifftshift(V_mix2 .* H_IF))); % Reuses the same IF filter H_IF
+
+v_demod2 = v_IF2 .* cos(2*pi*f_IF*t);
+V_demod2 = fftshift(fft(v_demod2));
+m2_rec = 4 * real(ifft(ifftshift(V_demod2 .* H_LPF)));
+
+figure;
+plot(t, m2, 'b', 'LineWidth', 1.5); hold on;
+plot(t, m2_rec, 'r--', 'LineWidth', 1.2);
+grid on; xlim([0 0.2]);
+title('Channel 2 Recovery Using Same IF Filter (f_{LO} = 500 Hz, f_{IF} = 100 Hz)');
+xlabel('Time (s)'); ylabel('Amplitude');
+legend('Original m_2(t)', 'Recovered m_2(t)');
+
+fprintf('f_LO values: Ch1 = %.1f Hz, Ch2 = %.1f Hz, Ch3 = %.1f Hz | Tuning Range = %.1f Hz to %.1f Hz (Span = %.1f Hz)\n', ...
+    f_LO1, f_LO2, f_LO3, f_LO1, f_LO3, f_LO3 - f_LO1);
+
+%% 7. Image Frequency Analysis and Mitigation [Item C.4]
+
+% 4(a) Image frequency for Channel 1 with high-side injection
+f_img1 = fc1 + 2 * f_IF; % 200 + 200 = 400 Hz (overlaps Channel 2)
+fprintf('Ch 1 Image Frequency = %.1f Hz (overlaps Ch 2 carrier = %.1f Hz)\n', f_img1, fc2);
+
+% 4(b) Image interference without an RF pre-selector filter
+V_IF1_mag = abs(fftshift(fft(v_IF1))) / N;
+figure;
+plot(f, V_IF1_mag, 'r', 'LineWidth', 1.2);
+grid on; xlim([-200 200]);
+title('IF Filter Output Spectrum (Wanted Ch 1 + Image Ch 2 around 100 Hz)');
+xlabel('Frequency (Hz)'); ylabel('Magnitude |V_{IF1}(f)|');
+
+m1_corrupted = m1_rec;
+
+figure;
+plot(t, m1, 'b', 'LineWidth', 1.5); hold on;
+plot(t, m1_corrupted, 'k--', 'LineWidth', 1.2);
+grid on; xlim([0 0.2]);
+title('Corrupted Demodulated m_1(t) Due to Image Interference (No RF Filter)');
+xlabel('Time (s)'); ylabel('Amplitude');
+legend('Original m_1(t)', 'Corrupted m_1(t)');
+
+% 4(c) RF band-pass pre-selector filter before the mixer
+S_fdm_fft = fftshift(fft(s_fdm));
+H_RF1 = (abs(f) >= (fc1 - BW_IF)) & (abs(f) <= (fc1 + BW_IF));
+s_rf1 = real(ifft(ifftshift(S_fdm_fft .* H_RF1)));
+
+v_mix_rf1 = s_rf1 .* cos(2*pi*f_LO1*t);
+V_mix_rf1 = fftshift(fft(v_mix_rf1));
+v_IF_rf1 = real(ifft(ifftshift(V_mix_rf1 .* H_IF)));
+
+v_demod_rf1 = v_IF_rf1 .* cos(2*pi*f_IF*t);
+V_demod_rf1 = fftshift(fft(v_demod_rf1));
+m1_rec_clean = 4 * real(ifft(ifftshift(V_demod_rf1 .* H_LPF)));
+
+figure;
+plot(t, m1, 'b', 'LineWidth', 1.5); hold on;
+plot(t, m1_rec_clean, 'g--', 'LineWidth', 1.2);
+grid on; xlim([0 0.2]);
+title('Channel 1 Recovery with RF Pre-Selector Filter');
+xlabel('Time (s)'); ylabel('Amplitude');
+legend('Original m_1(t)', 'Recovered m_1(t) (Clean)');
+
+fprintf('4(c) RF Filter Selectivity: Passband [%.0f, %.0f] Hz, Rejects Image [%.0f, %.0f] Hz\n', ...
+    fc1 - BW_IF, fc1 + BW_IF, f_img1 - BW_IF, f_img1 + BW_IF);
+
+% 4(d) Higher intermediate frequency (f_IF = 300 Hz) to move images outside FDM band
+f_IF_new = 300;
+f_LO1_new = fc1 + f_IF_new; % 500 Hz
+f_img1_new = fc1 + 2 * f_IF_new;
+f_img2_new = fc2 + 2 * f_IF_new;
+f_img3_new = fc3 + 2 * f_IF_new;
+
+v_mix_new = s_fdm .* cos(2*pi*f_LO1_new*t);
+V_mix_new = fftshift(fft(v_mix_new));
+H_IF_new = (abs(f) >= (f_IF_new - BW_IF)) & (abs(f) <= (f_IF_new + BW_IF));
+v_IF_new = real(ifft(ifftshift(V_mix_new .* H_IF_new)));
+
+v_demod_new = v_IF_new .* cos(2*pi*f_IF_new*t);
+V_demod_new = fftshift(fft(v_demod_new));
+m1_rec_newIF = 4 * real(ifft(ifftshift(V_demod_new .* H_LPF)));
+
+figure;
+plot(t, m1, 'b', 'LineWidth', 1.5); hold on;
+plot(t, m1_rec_newIF, 'm--', 'LineWidth', 1.2);
+grid on; xlim([0 0.2]);
+title('Channel 1 Recovery with Higher IF (f_{IF} = 300 Hz)');
+xlabel('Time (s)'); ylabel('Amplitude');
+xlim([0 0.2]);
+ylim([-1.2 1.2]);
+legend('Original m_1(t)', 'Recovered m_1(t) (f_{IF} = 300 Hz)', ...
+       'Location', 'northoutside', 'Orientation', 'horizontal');
+
+fprintf('New f_IF = %.1f Hz -> Images: %.1f Hz, %.1f Hz, %.1f Hz\n', ...
+    f_IF_new, f_img1_new, f_img2_new, f_img3_new);
+fprintf('4(d) Trade-off: Gain = images moved outside FDM band; Loss = higher-Q/sharper IF filter needed\n');
+\end{lstlisting}
 
 \section{Digital Communication}
 \subsection{Sampling, Quantization, and PCM}
