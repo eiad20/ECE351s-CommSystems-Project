@@ -34,19 +34,19 @@
         \\[1.5cm]
         \textbf{\Large Team Members}
         \\[0.5cm]
-        \begin{tabular}{c c c c}
-            \textbf{Name} & \textbf{Code} & \textbf{Dept.} & \textbf{Sec.} \\[5pt]
+        \begin{tabular}{c c c c c}
+            \textbf{Name} & \textbf{Code} & \textbf{Dept.} & \textbf{Sec.} & \textbf{Contributions} \\[5pt]
             \hline \\[-10pt]
-            \textit{\large \textbf{Farida Hatem Mostafa Reda}} & \textit{\large 2401395} & \large CSE & \textit{\large 3} \\
-            \textit{\large Habiba Ahmed Ebrahim} & \textit{\large 2401036} & \large CSE & \textit{\large 3} \\
-            \textit{\large Hana Hassan Sayed Hassan} & \textit{\large 2401266} & \large CSE & \textit{\large 3} \\
-            \textit{\large Amr Mohamed Ghonimy Kassab} & \textit{\large 2400531} & \large CSE & \textit{\large 3} \\
-            \textit{\large Mohamed Yehia Tawfik} & \textit{\large 2400646} & \large CSE & \textit{\large 3} \\
-            \textit{\large Eiad Salama Ahmed} & \textit{\large 2400098} & \large CSE & \textit{\large 3} \\
-            \textit{\large Ziad Tarek Fouad} & \textit{\large 2400429} & \large CSE & \textit{\large 3} \\
-            \textit{\large Omar Ehab Mohamed Ali Almaz} & \textit{\large 2400621} & \large CSE & \textit{\large 3} \\
-            \textit{\large Moaaz Mostafa Ibrahim Ahmed} & \textit{\large 2400862} & \large ECE & \textit{\large 3} \\
-            \textit{\large Ahmed Gamal Roushdy} & \textit{\large 2400315} & \large ECE & \textit{\large 3} \\
+            \textit{\large \textbf{Farida Hatem Mostafa Reda}} & \textit{\large 2401395} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Habiba Ahmed Ebrahim} & \textit{\large 2401036} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Hana Hassan Sayed Hassan} & \textit{\large 2401266} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Amr Mohamed Ghonimy Kassab} & \textit{\large 2400531} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Mohamed Yehia Tawfik} & \textit{\large 2400646} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Eiad Salama Ahmed} & \textit{\large 2400098} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Ziad Tarek Fouad} & \textit{\large 2400429} & \large CSE & \textit{\large 3} & \textit{\large dig\_part\_c} \\
+            \textit{\large Omar Ehab Mohamed Ali Almaz} & \textit{\large 2400621} & \large CSE & \textit{\large 3} & \\
+            \textit{\large Moaaz Mostafa Ibrahim Ahmed} & \textit{\large 2400862} & \large ECE & \textit{\large 3} & \\
+            \textit{\large Ahmed Gamal Roushdy} & \textit{\large 2400315} & \large ECE & \textit{\large 3} & \\
         \end{tabular}
     \end{center}
 \pagebreak
@@ -718,5 +718,125 @@ Bit errors, AMI-modulated carrier (64 bits, no noise) & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
+ \subsection{Part C: End-to-End System Integration}
+  
+    In this part, we assemble the individual functional blocks developed in Part~A and Part~B into a       
+    unified end-to-end communication system:
+    \begin{equation*}
+    m(t) \;\xrightarrow{\text{sample}}\; m[k] \;\xrightarrow{\text{quantize}}\; m_q[k]
+    \;\xrightarrow{\text{PCM encode}}\; b[n] \;\xrightarrow{\text{line code}}\; x_{\text{NRZ}}(t)          
+    \;\xrightarrow{\text{BPSK mod}}\; s(t) \;\xrightarrow{\text{coherent det}}\; \hat{b}[n]
+    \;\xrightarrow{\text{decode}}\; \hat{m}_q[k] \;\xrightarrow{\text{ideal LPF}}\; \hat{m}(t)             
+    \end{equation*}
+  
+    \paragraph{1. Complete Transmitted Waveform Generation.}
+    Following Part~A, the continuous-time analog message is:
+    \begin{equation}
+    m(t) = \cos(2\pi \cdot 20 \cdot t) + 0.5 \cos(2\pi \cdot 50 \cdot t), \quad W = 50\text{ Hz}
+    \end{equation}
+    The message is sampled at $f_s = 400\text{ Hz} = 4 f_{\text{Nyquist}}$, producing $N_s = 400$ samples 
+    over $T = 1\text{ s}$. As determined in Part~A Item~4(d), achieving an $\text{SQNR} \ge 40\text{ dB}$  
+    requires $n = 7\text{ bits}$ per sample ($L = 2^7 = 128$ levels). Using a mid-tread uniform quantizer 
+    over the dynamic range $[V_{\min}, V_{\max}] = [-1.3529\text{ V}, +1.5000\text{ V}]$, the quantization
+    step size is: 
+    \begin{equation}
+    \Delta = \frac{V_{\max} - V_{\min}}{L - 1} = \frac{2.8529}{127} \approx 0.02246\text{ V}
+    \end{equation} 
+    The quantized samples are serialized by the PCM encoder into an $N_b = 2800\text{ bit}$ stream at a bit
+    rate $R_b = n \cdot f_s = 2800\text{ bits/s}$ ($T_b \approx 0.357\text{ ms}$). The bits are mapped to a
+    polar NRZ line code ($\pm 1\text{ V}$) and modulated onto a sinusoidal carrier at $f_c = 14\text{ kHz} 
+    > R_b$ using Binary Phase Shift Keying (BPSK): 
+    \begin{equation}
+    s(t) = x_{\text{NRZ}}(t)\cos(2\pi f_c t)
+    \end{equation} 
+    Figure~\ref{fig:digC_tx} shows the waveforms across the transmitter blocks.
+  
+    \begin{figure}[H] 
+      \centering 
+      \includegraphics[width=0.95\textwidth]{Octave Scripts/digC_figures/01_tx_blocks_waveform.png} 
+      \caption{Signal waveforms at the output of each transmitter block over the first 20~ms.}
+      \label{fig:digC_tx}
+    \end{figure}
+  
+    \paragraph{2. Coherent Detection and Bit Recovery.} 
+    The coherent BPSK receiver mixes the incoming signal with a synchronized local carrier $2\cos(2\pi f_c
+    t)$ and detects bit values using integrate-and-dump decision over each bit interval $[k T_b,       
+    (k+1)T_b]$:
+    \begin{equation}
+    y[k] = \frac{1}{T_b}\int_{k T_b}^{(k+1)T_b} s(t) \cdot 2\cos(2\pi f_c t) \, dt = x_{\text{NRZ}}[k] +   
+    \underbrace{\frac{1}{T_b}\int_{k T_b}^{(k+1)T_b} x_{\text{NRZ}}(t)\cos(4\pi f_c t)\,dt}_{\approx 0}    
+    \end{equation}                                                                                         
+    Because the channel is ideal and the local oscillator is phase-synchronized ($\phi = 0^\circ$), the    
+    receiver recovers the bit stream with:                                                                 
+    \begin{equation*}                                                                                      
+    \textbf{Total Bit Errors} = 0 \quad (\text{out of } 2800\text{ bits})                                  
+    \end{equation*}                                                                                        
+    Figure~\ref{fig:digC_rx} confirms the exact match between the transmitted and received bits. If bit    
+    errors were observed, they could arise from local oscillator phase offset $\phi$ (degrading detection  
+    margin by $\cos\phi$), timing jitter at the decision slicer, channel band-limiting (intersymbol        
+    interference), or additive noise.                                                                      
+                                                                                                           
+    \begin{figure}[H]                                                                                      
+      \centering                                                                                           
+      \includegraphics[width=0.95\textwidth]{Octave Scripts/digC_figures/02_rx_bit_recovery.png}           
+      \caption{Coherent demodulation (top) and comparison of transmitted vs.\ received bit stream          
+      (bottom).}                                                                                           
+      \label{fig:digC_rx}                                                                                  
+    \end{figure}                                                                                           
+                                                                                                           
+    \paragraph{3 \& 4. Analog Reconstruction and Error Analysis.}                                          
+    The recovered bit stream is demultiplexed into 7-bit codewords, translated to level indices, and       
+    converted to discrete-time quantized levels $\hat{m}_q[k]$. The analog message is reconstructed by     
+    passing the weighted impulse train through an ideal low-pass filter with cutoff $f_{\text{cut}} = W =  
+    50\text{ Hz}$ and passband gain $T_s$.                                                                 
+                                                                                                           
+    Figure~\ref{fig:digC_recon} illustrates the reconstructed signal $\hat{m}(t)$ plotted together with the
+    original message $m(t)$, as well as the point-by-point reconstruction error $e(t) = m(t) - \hat{m}(t)$.
+                                                                                                           
+    \begin{figure}[H]                                                                                      
+      \centering                                                                                           
+      \includegraphics[width=0.95\textwidth]{Octave Scripts/digC_figures/03_reconstruction_and_error.png}  
+      \caption{Top: Reconstructed analog signal $\hat{m}(t)$ overlaid on original $m(t)$. Bottom: Total    
+      reconstruction error $e(t)$.}                                                                        
+      \label{fig:digC_recon}                                                                               
+    \end{figure}                                                                                           
+                                                                                                           
+    \begin{figure}[H]                                                                                      
+      \centering                                                                                           
+      \includegraphics[width=0.95\textwidth]{Octave Scripts/digC_figures/04_system_spectra.png}            
+      \caption{Magnitude spectra across the system: baseband message (top), transmitted BPSK signal        
+      (middle), and recovered reconstructed spectrum (bottom).}                                            
+      \label{fig:digC_spectra}                                                                             
+    \end{figure}                                                                                           
+                                                                                                           
+    \paragraph{Measurement and Source of Error.}                                                           
+    The numerical error metrics obtained from the simulation are:                                          
+    \begin{itemize}                                                                                        
+      \item \textbf{Quantization MSE ($e_q^2$):} $4.18\times 10^{-5}\text{ V}^2$ ($\text{SQNR} \approx     
+      41.75\text{ dB}$).                                                                                   
+      \item \textbf{Total Reconstruction MSE ($e_r^2$):} $4.21\times 10^{-5}\text{ V}^2$ ($\text{SQNR}     
+      \approx 41.72\text{ dB}$).                                                                           
+    \end{itemize}                                                                                          
+    The reconstruction error is dominated by the **quantization error** inherent in representing continuous
+    amplitudes with $n = 7$ bits ($128$ levels). The slight discrepancy between reconstruction MSE and     
+    quantization MSE stems from the finite observation window ($T = 1\text{ s}$), where truncation of the  
+    ideal low-pass filter sinc interpolation tails introduces mild edge ringing (Gibbs phenomenon).        
+                                                                                                           
+    \paragraph{Could the error be made smaller?}                                                           
+    Yes:                                                                                                   
+    \begin{enumerate}                                                                                      
+      \item \textbf{Increase bit resolution $n$:} Each additional bit increases the SQNR by approximately  
+      $6.02\text{ dB}$, decreasing the MSE by a factor of 4.                                               
+      \item \textbf{Non-uniform quantization ($\mu$-law / $A$-law):} Concentrates quantization steps where 
+      message probability density is highest.                                                              
+      \item \textbf{Filter windowing:} Applying windowed sinc interpolation or raised-cosine smoothing to  
+      eliminate finite-duration boundary transients.                                                       
+    \end{enumerate}                                                                                        
+                                                                                                           
+    \paragraph{5. Fault Diagnosis Check.}                                                                  
+    Because the total reconstruction error closely matches the theoretical quantization error              
+    ($\text{MSE}_{\text{recon}} \approx \text{MSE}_{\text{quant}}$) and the bit error count is strictly    
+    zero, no intermediate stage (carrier modulation, demodulation, PCM decoding) introduced degradation.
+
 
 \end{document}
