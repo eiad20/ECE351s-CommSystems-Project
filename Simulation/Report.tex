@@ -38,16 +38,16 @@
         \begin{tabular}{c c c c c}
             \textbf{Name} & \textbf{Code} & \textbf{Dept.} & \textbf{Sec.} & \textbf{Contributions} \\[5pt]
             \hline \\[-10pt]
-            \textit{\large \textbf{Farida Hatem Mostafa Reda}} & \textit{\large 2401395} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Habiba Ahmed Ebrahim} & \textit{\large 2401036} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Hana Hassan Sayed Hassan} & \textit{\large 2401266} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Amr Mohamed Ghonimy Kassab} & \textit{\large 2400531} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Mohamed Yehia Tawfik} & \textit{\large 2400646} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Eiad Salama Ahmed} & \textit{\large 2400098} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Ziad Tarek Fouad} & \textit{\large 2400429} & \large CSE & \textit{\large 3} & \textit{\large dig\_part\_c} \\
-            \textit{\large Omar Ehab Mohamed Ali Almaz} & \textit{\large 2400621} & \large CSE & \textit{\large 3} & \\
-            \textit{\large Moaaz Mostafa Ibrahim Ahmed} & \textit{\large 2400862} & \large ECE & \textit{\large 3} & \\
-            \textit{\large Ahmed Gamal Roushdy} & \textit{\large 2400315} & \large ECE & \textit{\large 3} & \\
+            \textit{\large \textbf{Farida Hatem Mostafa Reda}} & \textit{\large 2401395} & \large CSE & \textit{\large 3} & \textit{\large analog part c item 1 \& 3 }\\
+            \textit{\large Habiba Ahmed Ebrahim Ali} & \textit{\large 2401036} & \large CSE & \textit{\large 3} & \textit{\large analog part c item 2 \& 4}\\
+            \textit{\large Hana Hassan Sayed Hassan} & \textit{\large 2401266} & \large CSE & \textit{\large 3} & \textit{\large digital part A item 4-5 }\\
+            \textit{\large Amr Mohamed Ghonimy Kassab} & \textit{\large 2400531} & \large CSE & \textit{\large 3} & \textit{\large digital part B item 2 } \\
+            \textit{\large Mohamed Yehia Tawfik} & \textit{\large 2400646} & \large CSE & \textit{\large 3} &\textit{\large analog part A item 1-4 \& 6 }  \\
+            \textit{\large Eiad Salama Ahmed} & \textit{\large 2400098} & \large CSE & \textit{\large 3} & \textit{\large digital part A item 1-3 } \\
+            \textit{\large Ziad Tarek Fouad} & \textit{\large 2400429} & \large CSE & \textit{\large 3} & \textit{\large digital part c} \\
+            \textit{\large Omar Ehab Mohamed Ali Almaz} & \textit{\large 2400621} & \large CSE & \textit{\large 3} & \textit{\large analog part A item 5 \& 7 } \\
+            \textit{\large Moaaz Mostafa Ibrahim Ahmed} & \textit{\large 2400862} & \large ECE & \textit{\large 3} & \textit{\large digital part B item 1 }\\
+            \textit{\large Ahmed Gamal Roushdy} & \textit{\large 2400315} & \large ECE & \textit{\large 3} & \textit{\large analog part B item 1-4 }\\
         \end{tabular}
     \end{center}
 \pagebreak
@@ -982,9 +982,13 @@ Because every input sample in $[V_{\min}, V_{\max}]$ is rounded to its closest r
 \centering
 \caption{Verification of $|e(t)| \le \Delta/2$ ($R = 2.8529\text{ V}$, $f_s = 400\text{ Hz}$)}
 \label{tab:digA_item4_bounds}
+\small
+\setlength{\tabcolsep}{6pt}
 \begin{tabular}{c c c c c c c}
 \toprule
-\textbf{$n$} & \textbf{$L = 2^n$} & \textbf{$\Delta_{\text{rise}}/2$ (V)} & \textbf{$\max|e_{\text{rise}}|$ (V)} & \textbf{$\Delta_{\text{tread}}/2$ (V)} & \textbf{$\max|e_{\text{tread}}|$ (V)} & \textbf{Bound Valid?} \\
+ & & \multicolumn{2}{c}{\textbf{Mid-Rise (V)}} & \multicolumn{2}{c}{\textbf{Mid-Tread (V)}} & \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+\textbf{$n$} & \textbf{$L = 2^n$} & \textbf{$\Delta_{\text{rise}}/2$} & \textbf{$\max|e_{\text{rise}}|$} & \textbf{$\Delta_{\text{tread}}/2$} & \textbf{$\max|e_{\text{tread}}|$} & \textbf{Valid?} \\
 \midrule
 3 & 8   & 0.17831 & 0.17831 & 0.20378 & 0.19098 & Yes \\
 4 & 16  & 0.08915 & 0.08915 & 0.09510 & 0.07138 & Yes \\
@@ -1005,9 +1009,13 @@ while for Mid-Tread, $\Delta_{\text{tread}} = R/(2^n - 1)$ gives $\text{SQNR}_{\
 \centering
 \caption{Simulated vs.\ Theoretical SQNR for $n = 3, 4, 6,$ and $8$ bits ($f_s = 400\text{ Hz}$)}
 \label{tab:digA_item4_sqnr}
+\small
+\setlength{\tabcolsep}{8pt}
 \begin{tabular}{c c c c c}
 \toprule
-\textbf{$n$ (bits)} & \textbf{Mid-Rise Sim (dB)} & \textbf{Mid-Rise Theory (dB)} & \textbf{Mid-Tread Sim (dB)} & \textbf{Mid-Tread Theory (dB)} \\
+ & \multicolumn{2}{c}{\textbf{Mid-Rise SQNR (dB)}} & \multicolumn{2}{c}{\textbf{Mid-Tread SQNR (dB)}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{$n$ (bits)} & \textbf{Simulation} & \textbf{Theory} & \textbf{Simulation} & \textbf{Theory} \\
 \midrule
 3 & 16.04 & 17.71 & 16.15 & 16.55 \\
 4 & 22.72 & 23.73 & 25.37 & 23.17 \\
@@ -1090,7 +1098,7 @@ Decoder Sample / Bit Errors (Noiseless Link) & $0 / 400$ samples ($\max|\hat{m}_
 
 \noindent\textbf{Octave Implementation (Items 4 and 5).}\par\smallskip
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize, breaklines=true, breakatwhitespace=true, frame=single, xleftmargin=6pt, xrightmargin=6pt, framexleftmargin=6pt, framexrightmargin=6pt, aboveskip=4pt, belowskip=6pt]
-% ECE 351s - Digital Communication Part A: Items 4 & 5 (Core Logic)
+
 clear; close all; clc;
 
 %% Message Signal (fs = 400 Hz = 4x Nyquist) & True Asymmetric Range
